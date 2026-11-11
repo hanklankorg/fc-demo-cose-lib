@@ -4,13 +4,18 @@
 
 # Release Workflow for cose-lib
 # Uses the unified release orchestrator with Maven library publisher
+#
+# Runs when you push a signed release-request/vX.Y.Z tag; the release bumps
+# the version, writes the changelog and creates the final vX.Y.Z tag, never
+# you. Maven Central publication needs the request signed by a key in the
+# committed allowlist (.forge-ci/allowed_gpg_keys.asc or
+# .forge-ci/allowed_signers).
 name: Release Workflow
 
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+" # Stable: v1.0.0
-      - "v[0-9]+.[0-9]+.[0-9]+-SNAPSHOT*" # Snapshot: v1.0.0-SNAPSHOT
+      - "release-request/v*"
 
 concurrency:
   group: release-${{ github.ref }}
@@ -21,17 +26,42 @@ permissions:
 
 jobs:
   release:
-    uses: diggsweden/reusable-ci/.github/workflows/release-orchestrator.yml@617cb32268cb6aefdfa4117b4159d37e3b47d7b3 # v2.8.3
+    uses: diggsweden/forge-ci/.github/workflows/release-orchestrator.yml@PIN_FORGE_CI_SHA # v0.90.0
     permissions:
       contents: write # Create GitHub releases and tags
-      packages: write # Publish to GitHub Packages (backup)
-      id-token: write # Generate OIDC token for Maven Central
-      actions: read # Needed by container job (even if skipped)
-      attestations: write # Needed by container job (even if skipped)
-      security-events: write # Needed by container job (even if skipped)
-    secrets: inherit # Use org-level MAVEN_CENTRAL credentials and GPG keys
+      packages: write # Required by the orchestrator's publish stage
+      id-token: write # Required by the orchestrator's publish stage
+      actions: read # Read the run's artifacts
+    secrets:
+      RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      # GPG signs the release files, the Maven Central packages and the
+      # release commit and tag.
+      RELEASE_GPG_PRIVATE_KEY: ${{ secrets.RELEASE_GPG_PRIVATE_KEY }}
+      RELEASE_GPG_PASSPHRASE: ${{ secrets.RELEASE_GPG_PASSPHRASE }}
+      RELEASE_GPG_PUBLIC_KEY: ${{ secrets.RELEASE_GPG_PUBLIC_KEY }}
+      MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+      MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
     with:
-      reusable-ci-ref: d31c989acd139c3e8754e116496c826af8dbbca0
-      artifacts-config: .github/artifacts.yml
+      branch: main
+      # Stable versions only: the release route refuses a -SNAPSHOT version
+      # for Maven Central. Snapshots are published by
+      # release-snapshot-workflow.yml instead of a vX.Y.Z-SNAPSHOT tag.
+      # Maven Central needs an allowlisted request signer in any case; this
+      # refuses another signer before anything is built.
+      release.requireallowlistedsigner: true
+      # The full commit the workflow ref above names. Every plain-runner job
+      # runs the CLI built in this run from exactly this commit.
+      forge-ci-binary-ref: PIN_FORGE_CI_SHA # v0.90.0
+      # Every runtime image is pinned by digest: the workflow that runs it
+      # refuses anything else before its job starts. Replace FIXME with
+      # the digests of the release you call; see
+      # https://github.com/diggsweden/forge-ci/blob/main/docs/runtime-images.md#advanced-pinning-recipe
+      runtime-image: ghcr.io/diggsweden/forge-ci-runtime-base@sha256:0000000000000000000000000000000000000000000000000000000000000000 # FIXME v0.90.0 digest
+      canonical-builder-image: ghcr.io/diggsweden/forge-ci-runtime-go-1.27@sha256:0000000000000000000000000000000000000000000000000000000000000000 # FIXME v0.90.0 digest
+      runtime-image-full: ghcr.io/diggsweden/forge-ci-runtime@sha256:0000000000000000000000000000000000000000000000000000000000000000 # FIXME v0.90.0 digest
+      # The build runs on this image's JDK 25 and compiles for release 21
+      # (maven.compiler.release); Forge CI has no Java 21 runtime image.
+      runtime-image-java: ghcr.io/diggsweden/forge-ci-runtime-java-25@sha256:0000000000000000000000000000000000000000000000000000000000000000 # FIXME v0.90.0 digest
+      artifacts-config: .forge-ci/artifacts.yml
       changelog-creator: git-cliff
       release-publisher: github-cli

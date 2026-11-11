@@ -5,6 +5,13 @@
 # Artifacts Configuration for cose-lib
 # Maven library published to Maven Central
 
+# Release files, the Maven Central packages and the release commit and tag
+# are signed with the GPG key in RELEASE_GPG_PRIVATE_KEY, as before.
+sign:
+  method: gpg
+git-signing:
+  method: gpg
+
 artifacts:
   - name: cose-lib
     project-type: maven
