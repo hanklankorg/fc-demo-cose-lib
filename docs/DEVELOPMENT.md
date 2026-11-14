@@ -299,25 +299,20 @@ Releases to Maven Central can be done via CI or locally.
 
 1. **For SNAPSHOT releases**:
 
-   ```shell
-   # Tag with -SNAPSHOT suffix (use -f to force if tag already exists)
-   git tag -sf v0.0.3-SNAPSHOT -m 'v0.0.3-SNAPSHOT'
-   # Push the tag to trigger the CI workflow (use -f to force update on remote)
-   git push -f origin tag v0.0.3-SNAPSHOT
-   ```
-
-   > **NOTE**: Always use the same SNAPSHOT tag version until ready for a production release.
+   Run the Release Snapshot Workflow by hand from the Actions tab, on the
+   branch to snapshot. It needs no tag.
 
 2. **For Production releases**:
 
    ```shell
-   # Tag with the desired version (no SNAPSHOT suffix)
-   git tag -s v1.0.0 -m 'v1.0.0'
+   # Request the desired version with a signed release request tag
+   git tag -s release-request/v1.0.0 -m 'Release v1.0.0'
    # Push the tag to trigger the CI workflow
-   git push origin tag v1.0.0
+   git push origin release-request/v1.0.0
    ```
 
-   > **NOTE**: The tag version will be used in the POM file.
+   > **NOTE**: The requested version is set in the POM file, and the
+   > workflow creates the tag `v1.0.0`.
 
 3. **Monitor the workflow** in GitHub Actions to ensure successful completion.
 
