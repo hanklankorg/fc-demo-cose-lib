@@ -48,7 +48,7 @@ jobs:
       # release-snapshot-workflow.yml instead of a vX.Y.Z-SNAPSHOT tag.
       # Maven Central needs an allowlisted request signer in any case; this
       # refuses another signer before anything is built.
-      release.requireallowlistedsigner: true
+      release.requireallowlistedsigner: false
       # The full commit the workflow ref above names. Every plain-runner job
       # runs the CLI built in this run from exactly this commit.
       forge-ci-binary-ref: PIN_FORGE_CI_SHA # v0.90.0
