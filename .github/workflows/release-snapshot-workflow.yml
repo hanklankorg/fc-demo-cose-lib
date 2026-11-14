@@ -7,7 +7,7 @@
 # version to Maven Central's snapshot repository, without a release, a tag
 # or a change to the branch. The route refuses a version that is not a
 # snapshot.
-name: Snapshot Release
+name: Release Snapshot Workflow
 
 on:
   # A manual run snapshots the branch it is started from.
