@@ -45,7 +45,7 @@ jobs:
       branch: main
       # Stable versions only: the release route refuses a -SNAPSHOT version
       # for Maven Central. Snapshots are published by
-      # release-dev-workflow.yml instead of a vX.Y.Z-SNAPSHOT tag.
+      # release-snapshot-workflow.yml instead of a vX.Y.Z-SNAPSHOT tag.
       # Maven Central needs an allowlisted request signer in any case; this
       # refuses another signer before anything is built.
       release.requireallowlistedsigner: true
