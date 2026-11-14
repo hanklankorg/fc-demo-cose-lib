@@ -18,7 +18,7 @@ artifacts:
     working-directory: .
     build-type: library
     publish-to:
-      - maven-central
+      - forge-packages
     config:
       java-version: 21
       settings-path: .mvn/settings.xml
